@@ -1,6 +1,7 @@
 module GasChromatographyTools
 
-using GasChromatographySimulator
+using Reexport
+@reexport using GasChromatographySimulator
 using Interpolations
 using Dierckx
 
