@@ -21,6 +21,34 @@ function stretched_program(n::Float64, par::GasChromatographySimulator.Parameter
 	end	
 end
 
+function initial_n(n::Float64, tR_lock::Float64, ii::Int, par::GasChromatographySimulator.Parameters)
+    par_n = GasChromatographyTools.stretched_program(n, par)
+    sol_n = GasChromatographySimulator.solve_system_multithreads(par_n)
+    tR_n = sol_n[ii].u[end][1]
+    if n>1
+        while tR_n-tR_lock<0 && n<130.0
+            n = n*2.0
+            par_n = GasChromatographyTools.stretched_program(n, par)
+            sol_n = GasChromatographySimulator.solve_system_multithreads(par_n)
+            tR_n = sol_n[ii].u[end][1]
+        end
+    elseif n<1
+        while tR_n-tR_lock>0 && n>0.01
+            n = n*0.5
+            par_n = GasChromatographyTools.stretched_program(n, par)
+            sol_n = GasChromatographySimulator.solve_system_multithreads(par_n)
+            tR_n = sol_n[ii].u[end][1]
+        end
+    end
+    if n>130.0
+        error("The choosen retention time for locking is to big.")
+    elseif n<0.01
+        error("The choosen retention time for locking is to small.")
+    else
+        return n
+    end
+end
+
 function RT_locking(par::GasChromatographySimulator.Parameters, tR_lock::Float64, tR_tol::Float64, solute_RT::String)
 	# estimate the factor 'n' for the temperature program to achieve the retention time 'tR_lock' for 'solute_RT' with the GC-system defined by 'par' 
 	if isa(par, Array)==true
@@ -37,9 +65,9 @@ function RT_locking(par::GasChromatographySimulator.Parameters, tR_lock::Float64
 		tR₀ = sol₀.u[end][1]
 		# start value for the factor 'n'
 		if tR₀-tR_lock<0
-			n₁ = 1.5
+			n₁ = initial_n(2.0, tR_lock, ii, par)
 		else
-			n₁ = 0.5
+			n₁ = initial_n(0.5, tR_lock, ii, par)
 		end
 		# using a recursive function to estimate 'n'
 		n = recur_RT_locking(n₁, [1.0], [tR₀], par, tR_lock, tR_tol, ii)
