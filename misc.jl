@@ -109,3 +109,24 @@ function initial_n(n, tR_lock, ii, par)
     end
 end
 initial_n(0.5, 20.0, 2, par)
+
+
+#---test nb_solutes_RTlock.jl
+opt_C30 = GasChromatographySimulator.Options(OwrenZen5(), 1e-6, 1e-3, "outlet", true)
+sys_C30 = GasChromatographySimulator.constructor_System(4.0, 0.1e-3, 0.1e-6, "Rxi5MS", "He")
+prog_C30 =  GasChromatographySimulator.constructor_Program([0.0, 10.0, 60.0, 120.0], [50.1518, 50.1518, 310.152, 310.152], [401300.0, 401300.0, 576300.0, 576300.0], [0.0, 0.0, 0.0, 0.0], [20.0, 20.0, 20.0, 20.0], [0.0, 0.0, 0.0, 0.0], [4.0, 4.0, 4.0, 4.0], [0.0, 0.0, 0.0, 0.0], opt_C30.Tcontrol, sys_C30.L)
+sub_C30 = [GasChromatographySimulator.Substance("C30",
+                                                "638-68-6",
+                                                600.477,
+                                                37.5137,
+                                                181.004,
+                                                1e-3,
+                                                "Gaida.2021",
+                                                5.17619e-5,
+                                                0.0,
+                                                0.0)]
+par_C30 = GasChromatographySimulator.Parameters(sys_C30, prog_C30, sub_C30, opt_C30)
+
+tR_lock_C30 = 60.0
+tR_tol_C30 = 1e-3
+n = GasChromatographyTools.RT_locking(par_C30, tR_lock_C30, tR_tol_C30, "C30")
