@@ -5,6 +5,7 @@ using Reexport
 using Interpolations
 #using Dierckx
 
+#----RT-locking----------------------------------------------------
 # helper function for 'RT-locking' and 'stretching' of GC-program
 function stretched_program(n::Float64, par::GasChromatographySimulator.Parameters)
 	# stretch the temperature program in 'par' by a factor 'n'
@@ -111,8 +112,9 @@ function recur_RT_locking(n::Float64, n_vec::Array{Float64,1}, tR_vec::Array{Flo
 		return recur_RT_locking(new_n, new_n_vec, new_tR_vec, par, tR_lock, tR_tol, ii; opt_itp=opt_itp)
 	end
 end
-#----------------------------------
+#---end-RT-locking-----------------------------------------------------------------------------------
 
+#---misc-functions-----------------------------------------------------------------------------------
 function change_initial(par::GasChromatographySimulator.Parameters, init_τ, init_t)
 	# copys the parameters `par` and changes the values of par.sub[i].τ₀ and par.sub[i].t₀ to init_τ[i] resp. init_t[i]
 	newsub = Array{GasChromatographySimulator.Substance}(undef, length(par.sub))
@@ -123,4 +125,30 @@ function change_initial(par::GasChromatographySimulator.Parameters, init_τ, ini
 	return newpar
 end
 
+function general_step(x::Float64, L::Array{Float64,1}, a::Array{<:Any,1})
+    # a generalized step function
+    #
+    # x ... variable (x-positon)
+    # L ... Array with the different lengths of the column segments
+    # a ... Array with the values for the different column segments
+    #       values can also be functions
+    if length(L)!=length(a)
+        error("Parameters `L` and `a` must have the same length.")
+        return
+    end
+	intervals = Array{Intervals.Interval}(undef, length(L))
+	cumL = round.(cumsum([0; L]), digits=4)
+	for i=1:length(intervals)
+		if i==length(intervals)
+			intervals[i] = Interval{Closed, Closed}(cumL[i],cumL[i+1])
+		else
+			intervals[i]=Interval{Closed, Open}(cumL[i],cumL[i+1])
+		end
+		if x in intervals[i]
+			return a[i]
+		end
+	end
+end
+
+#----end-misc-functions----------------------------------------------------------------------------
 end # module
