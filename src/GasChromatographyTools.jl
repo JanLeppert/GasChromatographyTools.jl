@@ -3,6 +3,7 @@ module GasChromatographyTools
 using Reexport
 @reexport using GasChromatographySimulator
 using Interpolations
+using Intervals
 #using Dierckx
 
 #----RT-locking----------------------------------------------------
