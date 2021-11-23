@@ -3,7 +3,7 @@ using GasChromatographySimulator
 
 # Options
 opt = GasChromatographySimulator.Options(OwrenZen5(), 1e-6, 1e-3, "inlet", true)
-
+GasChromatographySimulator.Options()
 # System
 L = 10.0
 a_d = [0.25e-3]
@@ -24,7 +24,7 @@ x₀_steps = zeros(length(time_steps))
 L₀_steps = L.*ones(length(time_steps))
 α_steps = zeros(length(time_steps))
 a_gf = [ΔT_steps x₀_steps L₀_steps α_steps]
-gf(x) = GasChromatographySimulator.gf_const(x, a_gf)
+gf(x) = GasChromatographySimulator.gradient(x, a_gf)
 T_itp = GasChromatographySimulator.temperature_interpolation(time_steps, temp_steps, gf, sys.L)
 pin_itp = GasChromatographySimulator.pressure_interpolation(time_steps, pin_steps)
 pout_itp = GasChromatographySimulator.pressure_interpolation(time_steps, pout_steps)
@@ -64,52 +64,7 @@ stretched_prog = GasChromatographyTools.stretched_program(2.0, par)
 sol_n2 = GasChromatographySimulator.solve_system_multithreads(stretched_prog)
 tR_lock_n2 = sol_n2[2].u[end][1]
 
-n_factor = GasChromatographyTools.RT_locking(par, 10.0, 1e-3, "solute 2")
-
-tR_lock = 100.0
-if tR_lock_n1-tR_lock<0
-    n₁ = 2.0
-else
-    n₁ = 0.5
-end
-par₁ = GasChromatographyTools.stretched_program(n₁, par)
-sol₁ = GasChromatographySimulator.solve_system_multithreads(par₁)
-tR₁ = sol₁[2].u[end][1]
-if tR₁-tR_lock<0
-    n₂ = n₁*2.0
-else
-    n₂ = n₁*0.5
-end
-
-function initial_n(n, tR_lock, ii, par)
-    par_n = GasChromatographyTools.stretched_program(n, par)
-    sol_n = GasChromatographySimulator.solve_system_multithreads(par_n)
-    tR_n = sol_n[ii].u[end][1]
-    if n>1
-        while tR_n-tR_lock<0 && n<130.0
-            n = n*2.0
-            par_n = GasChromatographyTools.stretched_program(n, par)
-            sol_n = GasChromatographySimulator.solve_system_multithreads(par_n)
-            tR_n = sol_n[ii].u[end][1]
-        end
-    elseif n<1
-        while tR_n-tR_lock>0 && n>0.01
-            n = n*0.5
-            par_n = GasChromatographyTools.stretched_program(n, par)
-            sol_n = GasChromatographySimulator.solve_system_multithreads(par_n)
-            tR_n = sol_n[ii].u[end][1]
-        end
-    end
-    if n>130.0
-        error("The choosen retention time for locking is to big.")
-    elseif n<0.01
-        error("The choosen retention time for locking is to small.")
-    else
-        return n
-    end
-end
-initial_n(0.5, 20.0, 2, par)
-
+n_factor = GasChromatographyTools.RT_locking(par, 300.0, 1e-3, "solute 2")
 
 #---test nb_solutes_RTlock.jl
 opt_C30 = GasChromatographySimulator.Options(OwrenZen5(), 1e-6, 1e-3, "outlet", true)

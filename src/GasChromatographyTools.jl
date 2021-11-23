@@ -4,7 +4,7 @@ using Reexport
 @reexport using GasChromatographySimulator
 using Interpolations
 using Intervals
-#using Dierckx
+using Dierckx
 
 #----RT-locking----------------------------------------------------
 # helper function for 'RT-locking' and 'stretching' of GC-program

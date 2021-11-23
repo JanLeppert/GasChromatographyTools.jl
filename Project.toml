@@ -1,7 +1,7 @@
 name = "GasChromatographyTools"
 uuid = "b1a91d42-e520-41a6-b75d-584445aea833"
 authors = ["Jan Leppert <jleppert@uni-bonn.de>"]
-version = "0.1.6"
+version = "0.1.7"
 
 [deps]
 Dierckx = "39dd38d3-220a-591b-8e3c-4c3a8c710a94"
@@ -12,7 +12,7 @@ Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 
 [compat]
 Dierckx = "0.5"
-GasChromatographySimulator = "0.1.8"
+GasChromatographySimulator = "0.2.0"
 Interpolations = "0.13"
 Intervals = "1.5.0"
 Reexport = "1.2"
