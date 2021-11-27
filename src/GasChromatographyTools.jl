@@ -51,10 +51,12 @@ function initial_n(n::Float64, tR_lock::Float64, ii::Int, par::GasChromatography
     end
 end
 
-function RT_locking(par::GasChromatographySimulator.Parameters, tR_lock::Float64, tR_tol::Float64, solute_RT::String; opt_itp="linear")
+function RT_locking(par::GasChromatographySimulator.Parameters, tR_lock::Float64, tR_reltol::Float64, solute_RT::String; opt_itp="linear")
 	# estimate the factor 'n' for the temperature program to achieve the retention time 'tR_lock' for 'solute_RT' with the GC-system defined by 'par' 
 	if isa(par, Array)==true
 		error("Select an element of the array of GC-systems.")
+	elseif tR_reltol<=par.opt.reltol
+		error("The tolerance for retention time locking tR_reltol is to small. Use tR_reltol >= par.opt.reltol ($(par.opt.reltol)).")
 	else
 		# find 'solute_RT' in the substances of 'par'
 		name = Array{String}(undef, length(par.sub))
@@ -72,12 +74,12 @@ function RT_locking(par::GasChromatographySimulator.Parameters, tR_lock::Float64
 			n₁ = initial_n(0.5, tR_lock, ii, par)
 		end
 		# using a recursive function to estimate 'n'
-		n = recur_RT_locking(n₁, [1.0], [tR₀], par, tR_lock, tR_tol, ii; opt_itp=opt_itp)
+		n = recur_RT_locking(n₁, [1.0], [tR₀], par, tR_lock, tR_reltol, ii; opt_itp=opt_itp)
 	end
 	return n		
 end
 
-function recur_RT_locking(n::Float64, n_vec::Array{Float64,1}, tR_vec::Array{Float64,1}, par::GasChromatographySimulator.Parameters, tR_lock::Float64, tR_tol::Float64, ii::Int64; opt_itp="linear")
+function recur_RT_locking(n::Float64, n_vec::Array{Float64,1}, tR_vec::Array{Float64,1}, par::GasChromatographySimulator.Parameters, tR_lock::Float64, tR_reltol::Float64, ii::Int64; opt_itp="linear")
 	# recursive function to find the factor 'n' for the temperature program to achieve the retention time 'tR_lock' for solute index 'ii' with the GC-system defined by 'par'
 	# calculate the retention time with the input guess 'n'
 	par₁ = stretched_program(n, par)
@@ -88,7 +90,7 @@ function recur_RT_locking(n::Float64, n_vec::Array{Float64,1}, tR_vec::Array{Flo
 		sol₁ = GasChromatographySimulator.solving_migration(par₁.sys, par₁.prog, par₁.sub[ii], par₁.opt)
 		tR₁ = sol₁.u[end]
 	end
-	if abs(tR₁-tR_lock)<tR_tol
+	if abs(tR₁-tR_lock)/tR_lock<tR_reltol
 		# if retention time is less than 'tR_tol' from 'tR_lock' we found the factor 'n'
 		return n
 	else
@@ -110,7 +112,7 @@ function recur_RT_locking(n::Float64, n_vec::Array{Float64,1}, tR_vec::Array{Flo
 		new_n = itp(tR_lock)
 		#println("new_n=$(new_n), tR₁=$(tR₁)")
 		# use the new factor 'new_n' and call the recursive function again
-		return recur_RT_locking(new_n, new_n_vec, new_tR_vec, par, tR_lock, tR_tol, ii; opt_itp=opt_itp)
+		return recur_RT_locking(new_n, new_n_vec, new_tR_vec, par, tR_lock, tR_reltol, ii; opt_itp=opt_itp)
 	end
 end
 #---end-RT-locking-----------------------------------------------------------------------------------
