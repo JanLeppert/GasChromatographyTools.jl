@@ -55,7 +55,7 @@ function RT_locking(par::GasChromatographySimulator.Parameters, tR_lock::Float64
 	# estimate the factor 'n' for the temperature program to achieve the retention time 'tR_lock' for 'solute_RT' with the GC-system defined by 'par' 
 	if isa(par, Array)==true
 		error("Select an element of the array of GC-systems.")
-	elseif tR_reltol<=par.opt.reltol
+	elseif tR_reltol<par.opt.reltol
 		error("The tolerance for retention time locking tR_reltol is to small. Use tR_reltol >= par.opt.reltol ($(par.opt.reltol)).")
 	else
 		# find 'solute_RT' in the substances of 'par'
