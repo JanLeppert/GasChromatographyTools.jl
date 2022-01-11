@@ -1,7 +1,7 @@
 name = "GasChromatographyTools"
 uuid = "b1a91d42-e520-41a6-b75d-584445aea833"
 authors = ["Jan Leppert <jleppert@uni-bonn.de>"]
-version = "0.1.10"
+version = "0.1.9"
 
 [deps]
 Dierckx = "39dd38d3-220a-591b-8e3c-4c3a8c710a94"
@@ -22,4 +22,4 @@ Plots = "1.23"
 Pluto = "0.17"
 PlutoUI = "0.7"
 Reexport = "1.2"
-julia = "1.5.3"
+julia = "1.7.1"
