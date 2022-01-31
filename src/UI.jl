@@ -123,7 +123,8 @@ function UI_Program_ng()
 		""")
 	end
 end
-
+# combine the widegt functions for same set of parameters, choosing of the
+# different variants by keyword or default values
 """
     UI_Substance(sol)
 
@@ -185,7 +186,6 @@ function UI_Substance_name(sol)
 	end
 end
 
-
 """
     UI_Options()
 
@@ -205,5 +205,30 @@ function UI_Options()
 		)
 		""")
 	end
+end
+
+"""
+	setting_prog(prog_values)
+
+Translates the Program parameters from a tuple defined by a PlutoUI widget into
+the structure GasChromatographySimulator.Program.
+"""
+function setting_prog(prog_values)
+	# make different variants based on the size/composition of `prog_values``
+	time_steps = parse.(Float64, split(prog_values[1]))
+	temp_steps = parse.(Float64, split(prog_values[2]))
+	pin_steps = parse.(Float64, split(prog_values[3])).*1000.0.+101300.0
+	if prog_values[4] == "vacuum"
+		pout_steps = zeros(length(time_steps))	
+	elseif prog_values[4] == "atmosphere"
+		pout_steps = 101300.0.*ones(length(time_steps))
+	end
+	prog = GasChromatographySimulator.Program( 	time_steps,
+												temp_steps,
+												pin_steps,
+												pout_steps,
+												sys.L
+												)
+	return prog
 end
 ##---end-UI-functions-------------------------------------------------------------------------------
