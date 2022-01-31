@@ -227,7 +227,7 @@ function setting_prog(prog_values, L)
 												temp_steps,
 												pin_steps,
 												pout_steps,
-												sys.L
+												L
 												)
 	return prog
 end
