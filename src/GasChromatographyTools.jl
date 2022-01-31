@@ -299,5 +299,99 @@ function opt_set_UI()
 	end
 end
 ##---end-UI-functions-------------------------------------------------------------------------------
+
+##---begin-Plot-functions---------------------------------------------------------------------------
+"""
+	local_plots(xx, yy, sol, par)
+
+Show additional 'local' plots of selected `yy` quantities over selected `xx`
+quantities.
+
+# Arguments
+* `xx`: Selected quantity shown on the x-axis. Possible values: "z", "t", "T",
+  "τ", "σ" and "u".
+* `yy`: Selected quantity shown on the y-axis. Possible values: "z", "t", "T",
+  "τ", "σ" and "u".
+* `sol`: The solution of the simulation.
+* `par`: The parameters of the simulated GC-system.
+"""   
+function local_plots(xx, yy, sol, par)
+	n = size(sol)[1]
+
+	df_sol = GasChromatographySimulator.sol_extraction(solution, par)
+	xvalues = Array{Array{Float64,1}}(undef, n)
+	yvalues = Array{Array{Float64,1}}(undef, n)
+	
+	p_add = plot(legend=false)
+	for i=1:n
+		if xx=="z"
+			xvalues[i] = df_sol.z[i]
+			xlabel = "position z in m"
+		elseif xx=="t"
+			xvalues[i] = df_sol.t[i]
+			xlabel = "time t in s"
+		elseif xx=="T"
+			xvalues[i] = par.prog.T_itp.(df_sol.z[i], df_sol.t[i]).-273.15
+			xlabel = "temperature T in °C"
+		elseif xx=="τ"
+			xvalues[i] = sqrt.(df_sol.τ²[i])
+			xlabel = "peak width τ in s"
+		elseif xx=="σ"
+			xvalues[i] = velocity(df_sol, i, par).*sqrt.(df_sol.τ²[i])
+			xlabel = "band width in m"
+		elseif xx=="u"
+			xvalues[i] = velocity(df_sol, i, par)
+			xlabel = "solute velocity in m/s"
+		end
+		if yy=="z"
+			yvalues[i] = df_sol.z[i]
+			ylabel = "position z in m"
+		elseif yy=="t"
+			yvalues[i] = df_sol.t[i]
+			ylabel = "time t in s"
+		elseif yy=="T"
+			yvalues[i] = par.prog.T_itp.(df_sol.z[i], df_sol.t[i]).-273.15
+			ylabel = "temperature T in °C"
+		elseif yy=="τ"
+			yvalues[i] = sqrt.(df_sol.τ²[i])
+			ylabel = "peak width in s"
+		elseif yy=="σ"
+			yvalues[i] = velocity(df_sol, i, par).*sqrt.(df_sol.τ²[i])
+			ylabel = "band width in m"
+		elseif yy=="u"
+			yvalues[i] = velocity(df_sol, i, par)
+			ylabel = "solute velocity in m/s"
+		end
+		plot!(p_add, xvalues[i], yvalues[i], xlabel=xlabel, ylabel=ylabel, label=par.sub[i].name, m=:o)
+	end
+	return p_add
+end
+
+"""
+	velocity(df_sol, i, par)
+
+Calculate the velocity (in m/s) coressponding to solution of the `i-th` sunstance of a
+GC-system defined by `par`.
+""" 
+function velocity(df_sol, i, par)
+	x = df_sol.z[i]
+	t = df_sol.t[i]
+	T_itp = par.prog.T_itp
+	pin_itp = par.prog.pin_itp
+	pout_itp = par.prog.pout_itp
+	L = par.sys.L
+	d = par.sys.d
+	df = par.sys.df
+	gas = par.sys.gas
+	ΔCp = par.sub[i].ΔCp
+	Tchar = par.sub[i].Tchar
+	θchar = par.sub[i].θchar
+	φ₀ = par.sub[i].φ₀
+	u = Array{Float64}(undef, length(x))
+	for j=1:length(x)
+		u[j] = 1/GasChromatographySimulator.residency(x[j], t[j], T_itp, pin_itp, pout_itp, L, d, df, gas, ΔCp, Tchar, θchar, φ₀)
+	end
+	return u
+end
 #----notebooks-functions----------------------------------------------------------------------------
 end # module
