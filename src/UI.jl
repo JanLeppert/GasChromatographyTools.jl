@@ -213,7 +213,7 @@ end
 Translates the Program parameters from a tuple defined by a PlutoUI widget into
 the structure GasChromatographySimulator.Program.
 """
-function setting_prog(prog_values)
+function setting_prog(prog_values, L)
 	# make different variants based on the size/composition of `prog_values``
 	time_steps = parse.(Float64, split(prog_values[1]))
 	temp_steps = parse.(Float64, split(prog_values[2]))
