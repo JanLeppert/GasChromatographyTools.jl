@@ -85,6 +85,46 @@ function UI_Program()
 end
 
 """
+    UI_Program_ng()
+
+Construct a combined PlutoUI widget for the settings of the program of a GC
+system without a thermal gradient.
+
+# UI fields
+`time steps`: the time steps after which duration the values of temperature,
+inlet pressure, ΔT and α are achieved by linear interpolation (in s).
+`temperature steps`: the temperature steps (in °C). 
+``p_{in}`` steps: the steps of the inlet pressure (in kPa(g))
+`column outlet` selection of the outlet of the colum, "vacuum" (``p_{out} =
+0.0`` kPa(a)) or "atmosphere" (``p_{out} = 101.3`` kPa(a)).
+"""
+function UI_Program_ng()
+	PlutoUI.combine() do Child
+		@htl("""
+		<h3>Program settings</h3> 
+		_Note: Same number of entrys for every text field._
+		
+		$(
+			Child(TextField((50,1); default="0 60 300 300 120"))
+		) time steps [s] 
+		
+		$(
+			Child(TextField((50,1); default="40 40 170 300 300"))
+		) temperature steps [°C]
+		
+		$(
+			Child(TextField((50,1); default="18 18 58 98 98"))
+		) ``p_{in}`` steps [kPa(g)]
+
+		$(
+			Child(Select(["vacuum", "atmosphere"]; default="vacuum"))
+			) column outlet
+			
+		""")
+	end
+end
+
+"""
     UI_Substance(sol)
 
 Construct a combined PlutoUI widget for the settings of the substances separated
@@ -118,6 +158,33 @@ function UI_Substance(sol)
 		""")
 	end
 end
+
+"""
+    UI_Substance_name(sol)
+
+Construct a combined PlutoUI widget for the settings of the substances separated
+in the simulated GC system with the selectable substances `subs`. 
+	
+# UI fields
+* Select Substances: Selection of the substances, which will be simulated.
+"""
+function UI_Substance_name(sol)
+	if length(sol)>10
+		select_size = 10
+	else
+		select_size = length(sol)
+	end
+	PlutoUI.combine() do Child
+		@htl("""
+		<h3>Substance settings</h3> 
+		
+		Select Substances: $(
+			Child(MultiSelect(sol; default=sol[1:4], size=select_size))
+		) 
+		""")
+	end
+end
+
 
 """
     UI_Options()
