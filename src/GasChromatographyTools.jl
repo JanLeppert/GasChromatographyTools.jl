@@ -318,7 +318,7 @@ quantities.
 function local_plots(xx, yy, sol, par)
 	n = size(sol)[1]
 
-	df_sol = GasChromatographySimulator.sol_extraction(solution, par)
+	df_sol = GasChromatographySimulator.sol_extraction(sol, par)
 	xvalues = Array{Array{Float64,1}}(undef, n)
 	yvalues = Array{Array{Float64,1}}(undef, n)
 	
