@@ -255,5 +255,43 @@ function velocity(df_sol, i, par)
 	end
 	return u
 end
+
+function common(s_1, s_2)
+	common_s = String[]
+	if length(s_1) >= length(s_2)
+		for i=1:length(s_1)
+			if s_1[i] in s_2
+				push!(common_s, s_1[i])
+			end
+		end
+	else
+		for i=1:length(s_2)
+			if s_2[i] in s_1
+				push!(common_s, s_2[i])
+			end
+		end
+	end
+	return common_s
+end
+
+function common_peaklist(pl_1, pl_2)
+	name = pl_1.Name
+	tR1 = pl_1.tR
+	τR1 = pl_1.τR
+	tR2 = Array{Float64}(undef, size(pl_1)[1])
+	τR2 = Array{Float64}(undef, size(pl_1)[1])
+	for i=1:size(pl_1)[1]
+		i2 = findfirst(name[i].==pl_2.Name)
+		tR2[i] = pl_2.tR[i2]
+		τR2[i] = pl_2.τR[i2]
+	end
+	ΔtR = tR1 .- tR2
+	ΔτR = τR1 .- τR2
+	rel_tR = ΔtR.*100.0./tR1
+	rel_τR = ΔτR.*100.0./τR1
+	common_pl = DataFrame(Name=name, tR1=tR1, tR2=tR2, ΔtR=ΔtR, rel_tR=rel_tR, τR1=τR1, τR2=τR2, ΔτR=ΔτR, rel_τR=rel_τR)
+	return common_pl
+end
+
 #----notebooks-functions----------------------------------------------------------------------------
 end # module
