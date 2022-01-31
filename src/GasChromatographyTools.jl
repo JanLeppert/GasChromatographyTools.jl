@@ -6,6 +6,7 @@ using Interpolations
 using Intervals
 using Dierckx
 using HypertextLiteral
+using PlutoUI
 
 #----RT-locking----------------------------------------------------
 # helper function for 'RT-locking' and 'stretching' of GC-program
