@@ -102,24 +102,24 @@ function UI_Program_ng()
 	PlutoUI.combine() do Child
 		@htl("""
 		<h3>Program settings</h3> 
-		_Note: Same number of entrys for every text field._
-		
+		<em>Note: Same number of entrys for every text field.</em>
+		<ul>
 		$(
-			Child(TextField((50,1); default="0 60 300 300 120"))
+			Child(TextField((50,1); default="0 60 600 120"))
 		) time steps [s] 
 		
 		$(
-			Child(TextField((50,1); default="40 40 170 300 300"))
+			Child(TextField((50,1); default="40 40 300 300"))
 		) temperature steps [°C]
 		
 		$(
-			Child(TextField((50,1); default="18 18 58 98 98"))
+			Child(TextField((50,1); default="18 18 98 98"))
 		) ``p_{in}`` steps [kPa(g)]
 
 		$(
 			Child(Select(["vacuum", "atmosphere"]; default="vacuum"))
 			) column outlet
-			
+		</ul>
 		""")
 	end
 end
@@ -184,6 +184,60 @@ function UI_Substance_name(sol)
 		) 
 		""")
 	end
+end
+
+"""
+    UI_Substance(sol; default=(1:4, 0.0, 0.0))
+
+Construct a combined PlutoUI widget for the settings of the substances separated
+in the simulated GC system with the selectable substances `subs`. 
+
+Depending on the tupel of `default` the widget is setup. 
+
+For `default = (1:4, 0.0, 0.0)` the UI fields are:
+* Select Substances: Selection of the substances, which will be simulated,
+  default selection = 1st to 4th substance.
+* Injection time: Start time (in s) of the simulation. The same for all selected
+  substances. Default is 0.0 s.
+* Injection width: Peak width (in s) of all selected substances at the time of
+  injection. Default is 0.0 s. 
+
+For `default = (1:4,)` the UI fields are:
+* Select Substances: Selection of the substances, which will be simulated,
+  default selection = 1st to 4th substance. 
+"""
+function UI_Substance(sol; default=(1:4, 0.0, 0.0))
+	if length(sol)>10
+		select_size = 10
+	else
+		select_size = length(sol)
+	end
+	if length(default) == 3
+		PlutoUI.combine() do Child
+			@htl("""
+			<h3>Substance settings</h3> 
+			
+			Select Substances: $(
+				Child(MultiSelect(sol; default=sol[default[1]], size=select_size))
+			) 
+			<br />
+			Injection time [s]: $(
+				Child(NumberField(0.0:0.1:100.0; default=default[2]))
+			) and Injection width [s]: $(
+				Child(NumberField(0.00:0.01:10.0; default=default[3]))
+			) 
+			""")
+		end
+	elseif length(default) == 1
+		PlutoUI.combine() do Child
+			@htl("""
+			<h3>Substance settings</h3> 
+			
+			Select Substances: $(
+				Child(MultiSelect(sol; default=sol[default[1]], size=select_size))
+			) 
+			""")
+		end
 end
 
 """
