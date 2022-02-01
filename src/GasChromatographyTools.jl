@@ -302,7 +302,7 @@ function compare_measurement_simulation(meas, peaklist)
 		if typeof(i2) == Nothing
 			tRs[i] = NaN
 		else
-			tRs[i] = peaklist.tR[i]
+			tRs[i] = peaklist.tR[i2]
 		end
 	end
 	compare_df = DataFrame(Name=name, measured_tR=tRm, simulated_tR=tRs, ΔtR=tRm.-tRs, rel_tR=(tRm.-tRs)./tRm.*100.0)
