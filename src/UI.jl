@@ -12,20 +12,20 @@ Construct a combined PlutoUI widget for the settings of the GC system with then 
 * stat. phase: stationary phase of the column
 * Gas: mobile phase
 """
-function UI_System(sp)
+function UI_System(sp; default=(10.0, 0.25, 0.25, 1, "He"))
 		PlutoUI.combine() do Child
 			@htl("""
 			<h3>System settings</h3>
 			``L`` [m]: $(
-				Child(NumberField(0.1:0.1:100.0; default=10.0))
+				Child(NumberField(0.1:0.1:100.0; default=default[1]))
 			) ``d`` [mm]: $(
-				Child(NumberField(0.01:0.01:1.00; default=0.25))
+				Child(NumberField(0.01:0.01:1.00; default=default[2]))
 			) ``d_f`` [µm]: $(
-				Child(NumberField(0.01:0.01:1.00; default=0.25))
+				Child(NumberField(0.01:0.01:1.00; default=default[3]))
 			) stat. phase: $(
-				Child(Select(sp; default="SLB5ms"))
+				Child(Select(sp; default=sp[default[4]]))
 			) Gas: $(
-				Child(Select(["He", "H2", "N2"]; default="He"))
+				Child(Select(["He", "H2", "N2"]; default=default[5]))
 			) 
 			
 			""")
@@ -33,57 +33,98 @@ function UI_System(sp)
 end
 
 """
-    UI_Program()
+    UI_Program(; default=("0 60 300 300 120", "40 40 170 300 300", "0 0 40 60 0", "-3 -3 -3 -3 -3", "18 18 58 98 98", "0 0 0 0 0"))
 
 Construct a combined PlutoUI widget for the settings of the program of a GC
-system with a thermal gradient.
+system with or without a thermal gradient (depending on the default tuple).
 
-# UI fields
-`time steps`: the time steps after which duration the values of temperature,
+# With thermal gradient
+For default as a **tuple of six strings** the folwing fields will be shown in the
+widget:
+* example default tupel: default=("0 60 300 300 120", "40 40 170 300 300", "0 0 40 60 0", "-3 -3 -3 -3 -3", "18 18 58 98 98", "0 0 0 0 0")
+*`time steps`: the time steps after which duration the values of temperature,
 inlet pressure, ΔT and α are achieved by linear interpolation (in s).
-`temperature steps`: the temperature steps (in °C). 
-`ΔT steps`: the steps of the temperature difference (in °C) between column inlet
+*`temperature steps`: the temperature steps (in °C). 
+*`ΔT steps`: the steps of the temperature difference (in °C) between column inlet
 and outlet.
-`α steps`: the steps of the gradient profile (α = 0 ... linear change of
+*`α steps`: the steps of the gradient profile (α = 0 ... linear change of
 temperature along column, α < 0 ... concave exponential profile, α > 0 ...
 convexe exponential profile).
+*``p_{in}`` steps: the steps of the inlet pressure (in kPa(g))
+*``p_{out}`` steps: the steps of the outlet pressure (in kPa(a))
+
+# Without thermal gradient
+For a default as a **tuple of four strings** the folwing fields will be shown in the
+widget:
+* example default tupel: default=("0 60 600 120", "40 40 300 300", "18 18 98 98", "vacuum")
+*`time steps`: the time steps after which duration the values of temperature,
+inlet pressure, ΔT and α are achieved by linear interpolation (in s).
+*`temperature steps`: the temperature steps (in °C). 
 ``p_{in}`` steps: the steps of the inlet pressure (in kPa(g))
-``p_{out}`` steps: the steps of the outlet pressure (in kPa(a))
+`column outlet` selection of the outlet of the colum, "vacuum" (``p_{out} =
+0.0`` kPa(a)) or "atmosphere" (``p_{out} = 101.3`` kPa(a)).
+
 """
-function UI_Program()
-	PlutoUI.combine() do Child
-		@htl("""
-		<h3>Program settings</h3> 
-		_Note: Same number of entrys for every text field._
-		
-		$(
-			Child(TextField((50,1); default="0 60 300 300 120"))
-		) time steps [s] 
-		
-		$(
-			Child(TextField((50,1); default="40 40 170 300 300"))
-		) temperature steps [°C]
-		
-		$(
-			Child(TextField((50,1); default="0 0 40 60 0"))
-		) ``ΔT`` steps [°C]
-		
-		$(
-			Child(TextField((50,1); default="-3 -3 -3 -3 -3"))
-		) ``α`` steps
-
-		$(
-			Child(TextField((50,1); default="18 18 58 98 98"))
-		) ``p_{in}`` steps [kPa(g)]
-
-		$(
-			Child(TextField((50,1); default="0 0 0 0 0"))
-		)``p_{out}`` steps [kPa(a)]
+function UI_Program(; default=("0 60 300 300 120", "40 40 170 300 300", "0 0 40 60 0", "-3 -3 -3 -3 -3", "18 18 58 98 98", "0 0 0 0 0"))
+	if length(default) == 6
+		PlutoUI.combine() do Child
+			@htl("""
+			<h3>Program settings</h3> 
+			<em>Note: Same number of entrys for every text field.</em>
 			
-		""")
-	end
+			$(
+				Child(TextField((50,1); default=default[1]))
+			) time steps [s] 
+			
+			$(
+				Child(TextField((50,1); default=default[2]))
+			) temperature steps [°C]
+			
+			$(
+				Child(TextField((50,1); default=default[3]))
+			) ``ΔT`` steps [°C]
+			
+			$(
+				Child(TextField((50,1); default=default[4]))
+			) ``α`` steps
+
+			$(
+				Child(TextField((50,1); default=default[5]))
+			) ``p_{in}`` steps [kPa(g)]
+
+			$(
+				Child(TextField((50,1); default=default[6]))
+			)``p_{out}`` steps [kPa(a)]
+				
+			""")
+		end
+	elseif length(default) == 4
+		PlutoUI.combine() do Child
+			@htl("""
+			<h3>Program settings</h3> 
+			<em>Note: Same number of entrys for every text field.</em>
+			<ul>
+			$(
+				Child(TextField((50,1); default=default[1]))
+			) time steps [s] 
+			
+			$(
+				Child(TextField((50,1); default=default[2]))
+			) temperature steps [°C]
+			
+			$(
+				Child(TextField((50,1); default=default[3]))
+			) ``p_{in}`` steps [kPa(g)]
+	
+			$(
+				Child(Select(["vacuum", "atmosphere"]; default=default[4]))
+				) column outlet
+			</ul>
+			""")
+		end
 end
 
+#=
 """
     UI_Program_ng()
 
@@ -125,6 +166,7 @@ function UI_Program_ng()
 end
 # combine the widegt functions for same set of parameters, choosing of the
 # different variants by keyword or default values
+
 """
     UI_Substance(sol)
 
@@ -185,7 +227,7 @@ function UI_Substance_name(sol)
 		""")
 	end
 end
-
+=#
 """
     UI_Substance(sol; default=(1:4, 0.0, 0.0))
 
@@ -220,7 +262,6 @@ function UI_Substance(sol; default=(1:4,))
 			Select Substances: $(
 				Child(MultiSelect(sol; default=sol[default[1]], size=select_size))
 			) 
-			<br />
 			Injection time [s]: $(
 				Child(NumberField(0.0:0.1:100.0; default=default[2]))
 			) and Injection width [s]: $(
