@@ -229,7 +229,7 @@ function UI_Substance_name(sol)
 end
 =#
 """
-    UI_Substance(sol; default=(1:4, 0.0, 0.0))
+    UI_Substance(sol; default=(1:4, ))
 
 Construct a combined PlutoUI widget for the settings of the substances separated
 in the simulated GC system with the selectable substances `subs`. 
