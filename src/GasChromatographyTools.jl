@@ -256,7 +256,7 @@ function velocity(df_sol, i, par)
 	return u
 end
 
-function common(s_1, s_2)
+function common(s_1, s_2)# rename in common_strings, does such a function already exsit?
 	common_s = String[]
 	if length(s_1) >= length(s_2)
 		for i=1:length(s_1)
@@ -274,7 +274,7 @@ function common(s_1, s_2)
 	return common_s
 end
 
-function common_peaklist(pl_1, pl_2)
+function compare_peaklist(pl_1, pl_2)# rename in compare_peaklist
 	name = pl_1.Name
 	tR1 = pl_1.tR
 	τR1 = pl_1.τR
@@ -289,8 +289,24 @@ function common_peaklist(pl_1, pl_2)
 	ΔτR = τR1 .- τR2
 	rel_tR = ΔtR.*100.0./tR1
 	rel_τR = ΔτR.*100.0./τR1
-	common_pl = DataFrame(Name=name, tR1=tR1, tR2=tR2, ΔtR=ΔtR, rel_tR=rel_tR, τR1=τR1, τR2=τR2, ΔτR=ΔτR, rel_τR=rel_τR)
-	return common_pl
+	compare_pl = DataFrame(Name=name, tR1=tR1, tR2=tR2, ΔtR=ΔtR, rel_tR=rel_tR, τR1=τR1, τR2=τR2, ΔτR=ΔτR, rel_τR=rel_τR)
+	return compare_pl
+end
+
+function compare_measurement_simulation(meas, peaklist)
+	name = meas.Name
+	tRm = meas.RT
+	tRs = Array{Float64}(undef, size(meas)[1])
+	for i=1:size(meas)[1]
+		i2 = findfirst(name[i].==peaklist.Name)
+		if typeof(i2) == Nothing
+			tRs[i] = NaN
+		else
+			tRs[i] = peaklist.tR[i]
+		end
+	end
+	compare_df = DataFrame(Name=name, measured_tR=tRm, simulated_tR=tRs, ΔtR=tRm.-tRs, rel_tR=(tRm.-tRs)./tRm.*100.0)
+	return compare_df
 end
 
 #----notebooks-functions----------------------------------------------------------------------------
