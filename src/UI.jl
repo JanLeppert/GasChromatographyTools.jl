@@ -16,15 +16,15 @@ function UI_System(sp; default=(10.0, 0.25, 0.25, 1, "He"))
 		PlutoUI.combine() do Child
 			@htl("""
 			<h3>System settings</h3>
-			``L`` [m]: $(
+			L [m]: $(
 				Child(NumberField(0.1:0.1:100.0; default=default[1]))
-			) ``d`` [mm]: $(
+			)  d [mm]: $(
 				Child(NumberField(0.01:0.01:1.00; default=default[2]))
-			) ``d_f`` [µm]: $(
+			)  d_f [µm]: $(
 				Child(NumberField(0.01:0.01:1.00; default=default[3]))
-			) stat. phase: $(
+			)  stat. phase: $(
 				Child(Select(sp; default=sp[default[4]]))
-			) Gas: $(
+			)  Gas: $(
 				Child(Select(["He", "H2", "N2"]; default=default[5]))
 			) 
 			
@@ -71,7 +71,7 @@ function UI_Program(; default=("0 60 300 300 120", "40 40 170 300 300", "0 0 40 
 			@htl("""
 			<h3>Program settings</h3> 
 			<em>Note: Same number of entrys for every text field.</em>
-			
+			<ul>
 			$(
 				Child(TextField((50,1); default=default[1]))
 			) time steps [s] 
@@ -82,20 +82,20 @@ function UI_Program(; default=("0 60 300 300 120", "40 40 170 300 300", "0 0 40 
 			
 			$(
 				Child(TextField((50,1); default=default[3]))
-			) ``ΔT`` steps [°C]
+			) ΔT steps [°C]
 			
 			$(
 				Child(TextField((50,1); default=default[4]))
-			) ``α`` steps
+			) α steps
 
 			$(
 				Child(TextField((50,1); default=default[5]))
-			) ``p_{in}`` steps [kPa(g)]
+			) p_in steps [kPa(g)]
 
 			$(
 				Child(TextField((50,1); default=default[6]))
-			)``p_{out}`` steps [kPa(a)]
-				
+			) p_out steps [kPa(a)]
+			</ul>	
 			""")
 		end
 	elseif length(default) == 4
@@ -114,7 +114,7 @@ function UI_Program(; default=("0 60 300 300 120", "40 40 170 300 300", "0 0 40 
 			
 			$(
 				Child(TextField((50,1); default=default[3]))
-			) ``p_{in}`` steps [kPa(g)]
+			) p_in steps [kPa(g)]
 	
 			$(
 				Child(Select(["vacuum", "atmosphere"]; default=default[4]))
