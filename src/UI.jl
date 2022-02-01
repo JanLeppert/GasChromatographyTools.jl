@@ -206,7 +206,7 @@ For `default = (1:4,)` the UI fields are:
 * Select Substances: Selection of the substances, which will be simulated,
   default selection = 1st to 4th substance. 
 """
-function UI_Substance(sol; default=(1:4, 0.0, 0.0))
+function UI_Substance(sol; default=(1:4,))
 	if length(sol)>10
 		select_size = 10
 	else
@@ -238,6 +238,7 @@ function UI_Substance(sol; default=(1:4, 0.0, 0.0))
 			) 
 			""")
 		end
+	end
 end
 
 """
