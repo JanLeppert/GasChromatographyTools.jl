@@ -202,11 +202,11 @@ end
 Change the inital time and peak widths for the substances in a defined GC-system
 `par` to the values `init_τ` and `init_t`.
 """ 
-function change_initial(par::GasChromatographySimulator.Parameters, init_τ, init_t)
+function change_initial(par::GasChromatographySimulator.Parameters, init_t, init_τ)
 	# copys the parameters `par` and changes the values of par.sub[i].τ₀ and par.sub[i].t₀ to init_τ[i] resp. init_t[i]
 	newsub = Array{GasChromatographySimulator.Substance}(undef, length(par.sub))
 	for i=1:length(par.sub)
-		newsub[i] = GasChromatographySimulator.Substance(par.sub[i].name, par.sub[i].CAS, par.sub[i].Tchar, par.sub[i].θchar, par.sub[i].ΔCp, par.sub[i].φ₀, par.sub[i].ann, par.sub[i].Dag, init_τ[i], init_t[i])
+		newsub[i] = GasChromatographySimulator.Substance(par.sub[i].name, par.sub[i].CAS, par.sub[i].Tchar, par.sub[i].θchar, par.sub[i].ΔCp, par.sub[i].φ₀, par.sub[i].ann, par.sub[i].Dag, init_t[i], init_τ[i])
 	end
 	newpar = GasChromatographySimulator.Parameters(par.sys, par.prog, newsub, par.opt)
 	return newpar
