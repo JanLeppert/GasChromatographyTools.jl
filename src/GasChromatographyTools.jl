@@ -197,10 +197,10 @@ end
 
 #---misc-functions-----------------------------------------------------------------------------------
 """
-	change_initial(par, init_τ, init_t)
+	change_initial(par, init_t, init_τ)
 
 Change the inital time and peak widths for the substances in a defined GC-system
-`par` to the values `init_τ` and `init_t`.
+`par` to the values `init_t` and `, init_τ`.
 """ 
 function change_initial(par::GasChromatographySimulator.Parameters, init_t, init_τ)
 	# copys the parameters `par` and changes the values of par.sub[i].τ₀ and par.sub[i].t₀ to init_τ[i] resp. init_t[i]
