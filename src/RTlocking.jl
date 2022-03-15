@@ -5,11 +5,11 @@ function stretched_program(n::Float64, par::GasChromatographySimulator.Parameter
 		error("Select an element of the array of GC-system parameters.")
 	else
 		new_tsteps = n.*par.prog.time_steps
-		new_T_itp = GasChromatographySimulator.temperature_interpolation(new_tsteps, par.prog.temp_steps, par.prog.gf, par.sys.L)
+		new_T_itp = GasChromatographySimulator.temperature_interpolation(new_tsteps, par.prog.temp_steps, par.prog.gf, par.col.L)
 		new_pin_itp = GasChromatographySimulator.pressure_interpolation(new_tsteps, par.prog.pin_steps)
 		new_pout_itp = GasChromatographySimulator.pressure_interpolation(new_tsteps, par.prog.pout_steps)
 		new_prog = GasChromatographySimulator.Program(new_tsteps, par.prog.temp_steps, par.prog.pin_steps, par.prog.pout_steps, par.prog.gf, par.prog.a_gf, new_T_itp, new_pin_itp, new_pout_itp)
-		new_par = GasChromatographySimulator.Parameters(par.sys, new_prog, par.sub, par.opt)
+		new_par = GasChromatographySimulator.Parameters(par.col, new_prog, par.sub, par.opt)
 		return new_par
 	end	
 end
@@ -56,7 +56,7 @@ function RT_locking(par::GasChromatographySimulator.Parameters, tR_lock::Float64
 		end
 		ii = findfirst(name.==solute_RT)
 		# calculate the retention time for the original (un-stretched) program 
-		sol₀ = GasChromatographySimulator.solving_odesystem_r(par.sys, par.prog, par.sub[ii], par.opt)
+		sol₀ = GasChromatographySimulator.solving_odesystem_r(par.col, par.prog, par.sub[ii], par.opt)
 		tR₀ = sol₀.u[end][1]
 		# start value for the factor 'n'
 		if tR₀-tR_lock<0
@@ -75,10 +75,10 @@ function recur_RT_locking(n::Float64, n_vec::Array{Float64,1}, tR_vec::Array{Flo
 	# calculate the retention time with the input guess 'n'
 	par₁ = stretched_program(n, par)
 	if par.opt.odesys==true
-		sol₁ = GasChromatographySimulator.solving_odesystem_r(par₁.sys, par₁.prog, par₁.sub[ii], par₁.opt)
+		sol₁ = GasChromatographySimulator.solving_odesystem_r(par₁.col, par₁.prog, par₁.sub[ii], par₁.opt)
 		tR₁ = sol₁.u[end][1]
 	else
-		sol₁ = GasChromatographySimulator.solving_migration(par₁.sys, par₁.prog, par₁.sub[ii], par₁.opt)
+		sol₁ = GasChromatographySimulator.solving_migration(par₁.col, par₁.prog, par₁.sub[ii], par₁.opt)
 		tR₁ = sol₁.u[end]
 	end
 	if abs(tR₁-tR_lock)/tR_lock<tR_reltol

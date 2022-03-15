@@ -1,9 +1,9 @@
 ##---begin-UI-functions-----------------------------------------------------------------------------
 ## functions defining PlutoUI widgets for Pluto notebooks
 """
-    UI_System(sp)
+    UI_Column(sp)
 
-Construct a combined PlutoUI widget for the settings of the GC system with then selectable stationary phases `sp`. 
+Construct a combined PlutoUI widget for the settings of the GC Column with then selectable stationary phases `sp`. 
 	
 # UI fields
 * ``L``: column length in m.
@@ -12,10 +12,10 @@ Construct a combined PlutoUI widget for the settings of the GC system with then 
 * stat. phase: stationary phase of the column
 * Gas: mobile phase
 """
-function UI_System(sp; default=(10.0, 0.25, 0.25, 1, "He"))
+function UI_Column(sp; default=(10.0, 0.25, 0.25, 1, "He"))
 		PlutoUI.combine() do Child
 			@htl("""
-			<h3>System settings</h3>
+			<h3>Column settings</h3>
 			L [m]: $(
 				Child(NumberField(0.1:0.1:100.0; default=default[1]))
 			)  d [mm]: $(
@@ -36,7 +36,7 @@ end
     UI_Program(; default=("0 60 300 300 120", "40 40 170 300 300", "0 0 40 60 0", "-3 -3 -3 -3 -3", "18 18 58 98 98", "0 0 0 0 0"))
 
 Construct a combined PlutoUI widget for the settings of the program of a GC
-system with or without a thermal gradient (depending on the default tuple).
+column with or without a thermal gradient (depending on the default tuple).
 
 # With thermal gradient
 For default as a **tuple of six strings** the folwing fields will be shown in the
@@ -130,7 +130,7 @@ end
     UI_Program_ng()
 
 Construct a combined PlutoUI widget for the settings of the program of a GC
-system without a thermal gradient.
+column without a thermal gradient.
 
 # UI fields
 `time steps`: the time steps after which duration the values of temperature,
