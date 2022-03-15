@@ -39,11 +39,11 @@ begin
 			error("Select an element of the array of GC-system parameters.")
 		else
 			new_tsteps = n.*par.prog.time_steps
-			new_T_itp = GasChromatographySimulator.temperature_interpolation(new_tsteps, par.prog.temp_steps, par.prog.gf, par.sys.L)
+			new_T_itp = GasChromatographySimulator.temperature_interpolation(new_tsteps, par.prog.temp_steps, par.prog.gf, par.col.L)
 			new_pin_itp = GasChromatographySimulator.pressure_interpolation(new_tsteps, par.prog.pin_steps)
 			new_pout_itp = GasChromatographySimulator.pressure_interpolation(new_tsteps, par.prog.pout_steps)
 			new_prog = GasChromatographySimulator.Program(new_tsteps, par.prog.temp_steps, par.prog.pin_steps, par.prog.pout_steps, par.prog.gf, par.prog.a_gf, new_T_itp, new_pin_itp, new_pout_itp)
-			new_par = GasChromatographySimulator.Parameters(par.sys, new_prog, par.sub, par.opt)
+			new_par = GasChromatographySimulator.Parameters(par.col, new_prog, par.sub, par.opt)
 			return new_par
 		end	
 	end
@@ -88,7 +88,7 @@ begin
 			end
 			ii = findfirst(name.==solute_RT)
 			# calculate the retention time for the original (un-stretched) program 
-			sol₀ = GasChromatographySimulator.solving_odesystem_r(par.sys, par.prog, par.sub[ii], par.opt)
+			sol₀ = GasChromatographySimulator.solving_odesystem_r(par.col, par.prog, par.sub[ii], par.opt)
 			tR₀ = sol₀.u[end][1]
 			# start value for the factor 'n'
 			if tR₀-tR_lock<0
@@ -107,10 +107,10 @@ begin
 		# calculate the retention time with the input guess 'n'
 		par₁ = stretched_program(n, par)
 		if par.opt.odesys==true
-			sol₁ = GasChromatographySimulator.solving_odesystem_r(par₁.sys, par₁.prog, par₁.sub[ii], par₁.opt)
+			sol₁ = GasChromatographySimulator.solving_odesystem_r(par₁.col, par₁.prog, par₁.sub[ii], par₁.opt)
 			tR₁ = sol₁.u[end][1]
 		else
-			sol₁ = GasChromatographySimulator.solving_migration(par₁.sys, par₁.prog, par₁.sub[ii], par₁.opt)
+			sol₁ = GasChromatographySimulator.solving_migration(par₁.col, par₁.prog, par₁.sub[ii], par₁.opt)
 			tR₁ = sol₁.u[end]
 		end
 		if abs(tR₁-tR_lock)<tR_tol
@@ -153,7 +153,7 @@ begin
 	df = 0.1e-6
 	sp = "Rxi17SilMS" # ["Rxi17SilMS" -> ERR, "SLB5ms", "SPB50", "Wax", "DB5ms", "Rxi5MS", "genericLB", "genericJL"]
 	gas = "He"
-	sys = GasChromatographySimulator.constructor_System(L, d, df, sp, gas)
+	col = GasChromatographySimulator.constructor_System(L, d, df, sp, gas)
 
 	db_path = "/Users/janleppert/Documents/GitHub/Publication_GCsim/data/Databases/" 
 	db_file = "Database_append.csv"
@@ -178,7 +178,7 @@ begin
 	α = 9.0
 	prog0 = GasChromatographySimulator.constructor_Program([0.0, theat],[Tstart, Tstart+Theat], [pin, pin],[pout, pout],[ΔT, ΔT], [0.0, 0.0], [L, L], [α, α], opt.Tcontrol, L)
 	
-	par0 = GasChromatographySimulator.Parameters(sys, prog0, sub, opt)
+	par0 = GasChromatographySimulator.Parameters(col, prog0, sub, opt)
 
 	tR_lock = 12*tMref
 	tR_tol = 1e-3
@@ -204,7 +204,7 @@ md"""
 # ╔═╡ 30207849-cafe-4ec6-af8d-ee7b2e2e6de0
 begin
 	# initial simulation
-	sol₀ = GasChromatographySimulator.solving_odesystem_r(par0.sys, par0.prog, par0.sub[2], par0.opt)
+	sol₀ = GasChromatographySimulator.solving_odesystem_r(par0.col, par0.prog, par0.sub[2], par0.opt)
 	tR₀ = sol₀.u[end][1]
 end
 
@@ -221,7 +221,7 @@ begin
 	end
 	# recur function
 	par₁ = stretched_program(n₁, par0)
-	sol₁ = GasChromatographySimulator.solving_odesystem_r(par₁.sys, par₁.prog, par₁.sub[2], par₁.opt)
+	sol₁ = GasChromatographySimulator.solving_odesystem_r(par₁.col, par₁.prog, par₁.sub[2], par₁.opt)
 	tR₁ = sol₁.u[end][1]
 	n_vec₁ = sort([1.0; n₁])
 	tR_vec₁ = sort([tR₀; tR₁])
@@ -237,7 +237,7 @@ begin
 	# second stretch 
 	n₂ = itp₁(tR_lock)
 	par₂ = stretched_program(n₂, par0)
-	sol₂ = GasChromatographySimulator.solving_odesystem_r(par₂.sys, par₂.prog, par₂.sub[2], par₂.opt)
+	sol₂ = GasChromatographySimulator.solving_odesystem_r(par₂.col, par₂.prog, par₂.sub[2], par₂.opt)
 	tR₂ = sol₂.u[end][1]
 	n_vec₂ = sort([n_vec₁; n₂])
 	tR_vec₂ = sort([tR_vec₁; tR₂])
@@ -256,7 +256,7 @@ tR₂-tR_lock
 begin
 	n₃ = itp₂(tR_lock)
 	par₃ = stretched_program(n₃, par0)
-	sol₃ = GasChromatographySimulator.solving_odesystem_r(par₃.sys, par₃.prog, par₃.sub[2], par₃.opt)
+	sol₃ = GasChromatographySimulator.solving_odesystem_r(par₃.col, par₃.prog, par₃.sub[2], par₃.opt)
 	tR₃ = sol₃.u[end][1]
 	n_vec₃ = sort([n_vec₂; n₃])
 	tR_vec₃ = sort([tR_vec₂; tR₃])
@@ -274,7 +274,7 @@ tR₃-tR_lock
 begin
 	n₄ = itp₃(tR_lock)
 	par₄ = stretched_program(n₄, par0)
-	sol₄ = GasChromatographySimulator.solving_odesystem_r(par₄.sys, par₄.prog, par₄.sub[2], par₄.opt)
+	sol₄ = GasChromatographySimulator.solving_odesystem_r(par₄.col, par₄.prog, par₄.sub[2], par₄.opt)
 	tR₄ = sol₄.u[end][1]
 	n_vec₄ = sort([n_vec₃; n₄])
 	tR_vec₄ = sort([tR_vec₃; tR₄])
@@ -296,7 +296,7 @@ The proposed settings seam to lead to jumping estimations around the searched re
 begin 
 	n₅ = itp₄(tR_lock)
 	par₅ = GasChromatographyTools.stretched_program(n₅, par0)
-	sol₅ = GasChromatographySimulator.solving_odesystem_r(par₅.sys, par₅.prog, par₅.sub[2], par₅.opt)
+	sol₅ = GasChromatographySimulator.solving_odesystem_r(par₅.col, par₅.prog, par₅.sub[2], par₅.opt)
 	tR₅ = sol₅.u[end][1]
 	n_vec₅ = sort([n_vec₄; n₅])
 	tR_vec₅ = sort([tR_vec₄; tR₅])
@@ -313,7 +313,7 @@ tR₅-tR_lock
 begin
 	n₆ = itp₅(tR_lock)
 	par₆ = GasChromatographyTools.stretched_program(n₆, par0)
-	sol₆ = GasChromatographySimulator.solving_odesystem_r(par₆.sys, par₆.prog, par₆.sub[2], par₆.opt)
+	sol₆ = GasChromatographySimulator.solving_odesystem_r(par₆.col, par₆.prog, par₆.sub[2], par₆.opt)
 	tR₆ = sol₆.u[end][1]
 	n_vec₆ = sort([n_vec₅; n₆])
 	tR_vec₆ = sort([tR_vec₅; tR₆])
@@ -331,7 +331,7 @@ tR₆-tR_lock
 begin
 	n₇ = itp₆(tR_lock)
 	par₇ = GasChromatographyTools.stretched_program(n₇, par0)
-	sol₇ = GasChromatographySimulator.solving_odesystem_r(par₇.sys, par₇.prog, par₇.sub[2], par₇.opt)
+	sol₇ = GasChromatographySimulator.solving_odesystem_r(par₇.col, par₇.prog, par₇.sub[2], par₇.opt)
 	tR₇ = sol₇.u[end][1]
 	n_vec₇ = sort([n_vec₆; n₇])
 	tR_vec₇ = sort([tR_vec₆; tR₇])
@@ -346,7 +346,7 @@ end
 begin
 	n₈ = itp₇(tR_lock)
 	par₈ = GasChromatographyTools.stretched_program(n₈, par0)
-	sol₈ = GasChromatographySimulator.solving_odesystem_r(par₈.sys, par₈.prog, par₈.sub[2], par₈.opt)
+	sol₈ = GasChromatographySimulator.solving_odesystem_r(par₈.col, par₈.prog, par₈.sub[2], par₈.opt)
 	tR₈ = sol₈.u[end][1]
 	n_vec₈ = sort([n_vec₇; n₈])
 	tR_vec₈ = sort([tR_vec₇; tR₈])
@@ -368,7 +368,7 @@ Also, there seems to be some form of discontiuity of the simulation result aroun
 begin
 	n₉ = itp₈(tR_lock)
 	par₉ = GasChromatographyTools.stretched_program(n₉, par0)
-	sol₉ = GasChromatographySimulator.solving_odesystem_r(par₉.sys, par₉.prog, par₉.sub[2], par₉.opt)
+	sol₉ = GasChromatographySimulator.solving_odesystem_r(par₉.col, par₉.prog, par₉.sub[2], par₉.opt)
 	tR₉ = sol₉.u[end][1]
 	n_vec₉ = sort([n_vec₈; n₉])
 	tR_vec₉ = sort([tR_vec₈; tR₉])
@@ -393,7 +393,7 @@ begin
 	ttR = Array{Float64}(undef, length(nn))
 	for i=1:length(nn)
 	    pars = stretched_program(nn[i], par0)
-	    sols = GasChromatographySimulator.solving_odesystem_r(pars.sys, pars.prog, pars.sub[2], pars.opt)
+	    sols = GasChromatographySimulator.solving_odesystem_r(pars.col, pars.prog, pars.sub[2], pars.opt)
 	    ttR[i] = sols.u[end][1]
 	end
 	p2 = plot([tR_lock, tR_lock], [0.4, 0.6], label="tR_lock")
@@ -406,7 +406,7 @@ begin
 	tttR = Array{Float64}(undef, length(nnn))
 	for i=1:length(nnn)
 	    pars = stretched_program(nnn[i], par0)
-	    sols = GasChromatographySimulator.solving_odesystem_r(pars.sys, pars.prog, pars.sub[2], pars.opt)
+	    sols = GasChromatographySimulator.solving_odesystem_r(pars.col, pars.prog, pars.sub[2], pars.opt)
 	    tttR[i] = sols.u[end][1]
 	end
 	plot!(p2, tttR, nnn, markers=:circle, ylims=(0.499625, 0.499627), xlims=(51.482, 51.485))
@@ -419,10 +419,10 @@ par8 = stretched_program(nnn[8], par0)
 par9 = stretched_program(nnn[9], par0)
 
 # ╔═╡ 6d15c2a4-6d1e-4b89-b9e8-ecff004c4730
-sol8 = GasChromatographySimulator.solving_odesystem_r(par8.sys, par8.prog, par8.sub[2], par8.opt)
+sol8 = GasChromatographySimulator.solving_odesystem_r(par8.col, par8.prog, par8.sub[2], par8.opt)
 
 # ╔═╡ 665f302d-204b-47ac-90df-c5979350707c
-sol9 = GasChromatographySimulator.solving_odesystem_r(par9.sys, par9.prog, par9.sub[2], par9.opt)
+sol9 = GasChromatographySimulator.solving_odesystem_r(par9.col, par9.prog, par9.sub[2], par9.opt)
 
 # ╔═╡ 56095d71-6169-44b3-89d1-7ea7f1b6ddfb
 sol8.destats
@@ -459,13 +459,13 @@ The problem is not originated in the RT_lock algorithm but in the simulation its
 begin
 	# decrease the relative tolerance
 	opt_1 = GasChromatographySimulator.Options(OwrenZen5(), 1e-6, 1e-4, "inlet", true)
-	par_1 = GasChromatographySimulator.Parameters(sys, prog0, sub, opt_1)
+	par_1 = GasChromatographySimulator.Parameters(col, prog0, sub, opt_1)
 	# repeat the simulation from above
 	nnnn_1 = sort!(rand(0.499625:0.000000001:0.499627, 100))
 	ttttR_1 = Array{Float64}(undef, length(nnnn_1))
 	for i=1:length(nnnn_1)
 	    pars = stretched_program(nnnn_1[i], par_1)
-	    sols = GasChromatographySimulator.solving_odesystem_r(pars.sys, pars.prog, pars.sub[2], pars.opt)
+	    sols = GasChromatographySimulator.solving_odesystem_r(pars.col, pars.prog, pars.sub[2], pars.opt)
 	    ttttR_1[i] = sols.u[end][1]
 	end
 	plot!(p2, ttttR_1, nnnn_1, ylims=(0.499625, 0.499627), xlims=(51.482, 51.485), markers=:v, label="reltol=1e-4")
@@ -481,13 +481,13 @@ Statistics.std(ttttR_1)
 begin
 	# decrease the relative tolerance
 	opt_2 = GasChromatographySimulator.Options(OwrenZen5(), 1e-7, 1e-4, "inlet", true)
-	par_2 = GasChromatographySimulator.Parameters(sys, prog0, sub, opt_2)
+	par_2 = GasChromatographySimulator.Parameters(col, prog0, sub, opt_2)
 	# repeat the simulation from above
 	nnnn_2 = sort!(rand(0.499625:0.000000001:0.499627, 100))
 	ttttR_2 = Array{Float64}(undef, length(nnnn_2))
 	for i=1:length(nnnn_2)
 	    pars = stretched_program(nnnn_2[i], par_2)
-	    sols = GasChromatographySimulator.solving_odesystem_r(pars.sys, pars.prog, pars.sub[2], pars.opt)
+	    sols = GasChromatographySimulator.solving_odesystem_r(pars.col, pars.prog, pars.sub[2], pars.opt)
 	    ttttR_2[i] = sols.u[end][1]
 	end
 	plot!(p2, ttttR_2, nnnn_2, ylims=(0.499625, 0.499627), xlims=(51.482, 51.485), markers=:v, label="abstol=1e-7, reltol=1e-4")
@@ -503,13 +503,13 @@ Statistics.std(ttttR_2)
 begin
 	# decrease the relative tolerance
 	opt_3 = GasChromatographySimulator.Options(OwrenZen5(), 1e-7, 1e-5, "inlet", true)
-	par_3 = GasChromatographySimulator.Parameters(sys, prog0, sub, opt_3)
+	par_3 = GasChromatographySimulator.Parameters(col, prog0, sub, opt_3)
 	# repeat the simulation from above
 	nnnn_3 = sort!(rand(0.499625:0.000000001:0.499627, 100))
 	ttttR_3 = Array{Float64}(undef, length(nnnn_3))
 	for i=1:length(nnnn_3)
 	    pars = stretched_program(nnnn_3[i], par_3)
-	    sols = GasChromatographySimulator.solving_odesystem_r(pars.sys, pars.prog, pars.sub[2], pars.opt)
+	    sols = GasChromatographySimulator.solving_odesystem_r(pars.col, pars.prog, pars.sub[2], pars.opt)
 	    ttttR_3[i] = sols.u[end][1]
 	end
 	plot!(p2, ttttR_3, nnnn_3, ylims=(0.499625, 0.499627), xlims=(51.482, 51.485), markers=:v, label="abstol=1e-7, reltol=1e-5")
@@ -534,7 +534,7 @@ It seems, that, if the result is 'noisy' (which is not always the case), than we
 begin
 	n_3 = RT_locking(par_3, tR_lock, 1e-3, last_alkane; opt_itp="spline")
 	par_3_s = stretched_program(n_3, par_3)
-	sol_3_s = GasChromatographySimulator.solving_odesystem_r(par_3_s.sys, par_3_s.prog, par_3_s.sub[2], par_3_s.opt)
+	sol_3_s = GasChromatographySimulator.solving_odesystem_r(par_3_s.col, par_3_s.prog, par_3_s.sub[2], par_3_s.opt)
 	tR_3_s = sol_3_s.u[end][1]
 	#scatter!(p2, [tR_1_s, tR_1_s], [n_1, n_1], ylims=(0.9699739, n_1*1.000001))
 	tR_3_s-tR_lock
@@ -547,7 +547,7 @@ begin
 	tR_range = Array{Float64}(undef, length(n_range))
 	for i=1:length(n_range)
 	    pars = stretched_program(n_range[i], par_3)
-	    sols = GasChromatographySimulator.solving_odesystem_r(pars.sys, pars.prog, pars.sub[2], pars.opt)
+	    sols = GasChromatographySimulator.solving_odesystem_r(pars.col, pars.prog, pars.sub[2], pars.opt)
 	    tR_range[i] = sols.u[end][1]
 	end
 	#plot!(p2, tR_range, n_range, ylims=(n_range[1], n_range[end]), xlims=(tR_range[1], tR_range[end]))
@@ -574,7 +574,7 @@ function RT_locking_mod(par::GasChromatographySimulator.Parameters, tR_lock::Flo
 			end
 			ii = findfirst(name.==solute_RT)
 			# calculate the retention time for the original (un-stretched) program 
-			sol₀ = GasChromatographySimulator.solving_odesystem_r(par.sys, par.prog, par.sub[ii], par.opt)
+			sol₀ = GasChromatographySimulator.solving_odesystem_r(par.col, par.prog, par.sub[ii], par.opt)
 			tR₀ = sol₀.u[end][1]
 			# start value for the factor 'n'
 			if tR₀-tR_lock<0
@@ -606,10 +606,10 @@ function recur_RT_locking_rel(n::Float64, n_vec::Array{Float64,1}, tR_vec::Array
 		# calculate the retention time with the input guess 'n'
 		par₁ = stretched_program(n, par)
 		if par.opt.odesys==true
-			sol₁ = GasChromatographySimulator.solving_odesystem_r(par₁.sys, par₁.prog, par₁.sub[ii], par₁.opt)
+			sol₁ = GasChromatographySimulator.solving_odesystem_r(par₁.col, par₁.prog, par₁.sub[ii], par₁.opt)
 			tR₁ = sol₁.u[end][1]
 		else
-			sol₁ = GasChromatographySimulator.solving_migration(par₁.sys, par₁.prog, par₁.sub[ii], par₁.opt)
+			sol₁ = GasChromatographySimulator.solving_migration(par₁.col, par₁.prog, par₁.sub[ii], par₁.opt)
 			tR₁ = sol₁.u[end]
 		end
 		if abs(tR₁-tR_lock)/tR_lock<tR_tol
@@ -653,7 +653,7 @@ function RT_locking_rel(par::GasChromatographySimulator.Parameters, tR_lock::Flo
 			end
 			ii = findfirst(name.==solute_RT)
 			# calculate the retention time for the original (un-stretched) program 
-			sol₀ = GasChromatographySimulator.solving_odesystem_r(par.sys, par.prog, par.sub[ii], par.opt)
+			sol₀ = GasChromatographySimulator.solving_odesystem_r(par.col, par.prog, par.sub[ii], par.opt)
 			tR₀ = sol₀.u[end][1]
 			# start value for the factor 'n'
 			if tR₀-tR_lock<0
@@ -674,7 +674,7 @@ n_rel = RT_locking_rel(par0, tR_lock, 1e-4, last_alkane; opt_itp="spline")
 par0_rel = stretched_program(n_rel, par0)
 
 # ╔═╡ 9356daef-2045-4391-afe8-2f67bb646dea
-sol_rel = GasChromatographySimulator.solving_odesystem_r(par0_rel.sys, par0_rel.prog, par0_rel.sub[2], par0_rel.opt)
+sol_rel = GasChromatographySimulator.solving_odesystem_r(par0_rel.col, par0_rel.prog, par0_rel.sub[2], par0_rel.opt)
 
 # ╔═╡ 1422fb36-1933-4074-aa2c-556b9814fc42
 	tR_rel = sol_rel.u[end][1]
