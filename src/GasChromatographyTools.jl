@@ -14,7 +14,7 @@ include("./RTlocking.jl")
 #---end-RT-locking-------------------------------------------------
 
 
-
+## Attention: following functions are also located in GasChromatographySimulator
 #----begin-notebooks-functions----------------------------------------------------------------------
 ## UI-functions
 include("./UI.jl")

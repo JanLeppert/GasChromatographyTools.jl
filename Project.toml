@@ -14,7 +14,7 @@ PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
 Dierckx = "0.5"
-GasChromatographySimulator = "0.2"
+GasChromatographySimulator = "0"
 HypertextLiteral = "0.9"
 Interpolations = "0.13"
 Intervals = "1.5"

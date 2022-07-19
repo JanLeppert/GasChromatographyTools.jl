@@ -6,9 +6,9 @@ function stretched_program(n::Float64, par::GasChromatographySimulator.Parameter
 	else
 		new_tsteps = n.*par.prog.time_steps
 		new_T_itp = GasChromatographySimulator.temperature_interpolation(new_tsteps, par.prog.temp_steps, par.prog.gf, par.col.L)
-		new_pin_itp = GasChromatographySimulator.pressure_interpolation(new_tsteps, par.prog.pin_steps)
-		new_pout_itp = GasChromatographySimulator.pressure_interpolation(new_tsteps, par.prog.pout_steps)
-		new_prog = GasChromatographySimulator.Program(new_tsteps, par.prog.temp_steps, par.prog.pin_steps, par.prog.pout_steps, par.prog.gf, par.prog.a_gf, new_T_itp, new_pin_itp, new_pout_itp)
+		new_pin_itp = GasChromatographySimulator.steps_interpolation(new_tsteps, par.prog.Fpin_steps)
+		new_pout_itp = GasChromatographySimulator.steps_interpolation(new_tsteps, par.prog.pout_steps)
+		new_prog = GasChromatographySimulator.Program(new_tsteps, par.prog.temp_steps, par.prog.Fpin_steps, par.prog.pout_steps, par.prog.gf, par.prog.a_gf, new_T_itp, new_pin_itp, new_pout_itp)
 		new_par = GasChromatographySimulator.Parameters(par.col, new_prog, par.sub, par.opt)
 		return new_par
 	end	
